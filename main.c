@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	char *ip = inst; //Point ip to instruction stack
 
 	//Run program
-	while (*ip != NULL) {
+	while (*ip != 0) {
 		switch (*ip) {
 
 			//Next cell
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 							x--;
 
 						//No insts left
-						if (*ip == NULL) {
+						if (*ip == 0) {
 							fputs("Expected ']' before EOF", stderr);
 							return 1;
 						}
