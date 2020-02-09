@@ -50,6 +50,9 @@ int main(int argc, char *argv[]) {
 		
 	}
 
+	//Close file
+	fclose(fs);
+
 	if (SHOW_INST_STACK) {
 		puts("Instruction stack:");
 		puts(inst);
@@ -170,17 +173,7 @@ int main(int argc, char *argv[]) {
 						printf("Not reverting (%d)\n", *sp);
 				}
 				break;
-
 		}
-
-		//printf("%d\n", sp);
 		ip++;
-		//putchar(*sp);
-		//puts("");
 	}
-
-	fclose(fs);
-
-
-
 }
