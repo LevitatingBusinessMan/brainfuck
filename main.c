@@ -4,6 +4,9 @@
 #define INST_STACK_LENGTH 512
 #define STACK_SIZE 30000
 
+#define DEBUG 0
+#define SHOW_INST_STACK 0
+
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
 		puts("Please specify a filename!");
@@ -17,8 +20,8 @@ int main(int argc, char *argv[]) {
 	FILE *fs;
 
 	if (!(fs = fopen(filename, "r"))) {
-		perror("Unable to open file");
-		return EXIT_FAILURE;
+		perror("Error: ");
+		return 1;
 	}
 
 	//Instruction stack is 512 bytes
@@ -30,19 +33,16 @@ int main(int argc, char *argv[]) {
 	//Write the stack
 	char c;
 	int i = 0, j;
-	while ((c = fgetc(fs))  != EOF ) {
-
-		//printf(&c);
+	while ((c = getc(fs))  != EOF ) {
 
 		if (i > INST_STACK_LENGTH -1) {
-			perror("Maximum instruction stack reached.");
-			return EXIT_FAILURE;
+			fputs("Maximum instruction stack reached.", stderr);
+			return 1;
 		} 
 
 		//Add to instructions if valid inst
 		for (j=0; j < 8; j++) {
 			if (*av_insts[j] == c) {
-				//printf("%c %d\n", c, i);
 				inst[i] = c;
 				i++;
 			}
@@ -50,18 +50,133 @@ int main(int argc, char *argv[]) {
 		
 	}
 
-	puts("Instruction stack:");
-	printf(inst);
-
-
+	if (SHOW_INST_STACK) {
+		puts("Instruction stack:");
+		puts(inst);
+	}
 
 	//Setup WM
 	char stack[STACK_SIZE] = {0}; //Initilize stack
 	char *sp = stack; //Point sp to stack
+	char *ip = inst; //Point ip to instruction stack
 
 	//Run program
-	for (i = 0, i == NULL, i++) {
+	while (*ip != NULL) {
+		switch (*ip) {
 
+			//Next cell
+			case '>':
+				sp++;
+				if (DEBUG)
+					printf("nextcell (%d)\n", *sp);
+				break;
+
+			//Previous cell
+			case '<':
+				sp--;
+				if (DEBUG)
+					printf("prevcell (%d)\n", *sp);
+				break;
+
+			//Increment
+			case '+':
+				(*sp)++;
+				if (DEBUG)
+					printf("+ (%d)\n", *sp);
+				break;
+			
+			//Decrement
+			case '-':
+				(*sp)--;
+				if (DEBUG)
+					printf("- (%d)\n", *sp);
+				break;
+
+			//Log
+			case '.':
+				if (DEBUG)
+					printf("Logging (%d)\n", *sp);
+				putchar(*sp);
+				break;
+
+			//Get
+			case ',':
+				if (DEBUG)
+					puts("Getting");
+				*sp = getchar();
+				break;
+
+			//Jump
+			case '[':
+ 				if (*sp == 0) {
+					if (DEBUG)
+						puts("Skipping");
+					int x = 0;
+					while (1) {
+						ip++;
+
+						if (*ip == ']' && x == 0)
+							break;
+
+						//When finding another opening bracket,
+						//ignore a closing bracket
+						if (*ip == '[')
+							x++;
+
+						if (*ip == ']')
+							x--;
+
+						//No insts left
+						if (*ip == NULL) {
+							fputs("Expected ']' before EOF", stderr);
+							return 1;
+						}
+					}
+				} else {
+					if (DEBUG)
+						printf("Not skipping (%d)\n", *sp);
+				}
+				break;
+
+			//Jump back
+			case ']':
+ 				if (*sp != 0) {
+					if (DEBUG)
+						puts("Reverting");
+					int x = 0;
+					while (1) {
+						ip--;
+
+						if (*ip == '[' && x == 0)
+							break;
+
+						//When finding another opening bracket,
+						//ignore a closing bracket
+						if (*ip == ']')
+							x++;
+
+						if (*ip == '[')
+							x--;
+
+
+						//No insts left
+						if (ip == inst) {
+							fputs("Expected '[' before ']'", stderr);
+							return 1;
+						}
+					}
+				} else {
+					if (DEBUG)
+						printf("Not reverting (%d)\n", *sp);
+				}
+				break;
+
+		}
+
+		//printf("%d\n", sp);
+		ip++;
+		//putchar(*sp);
+		//puts("");
 	}
 
 	fclose(fs);
