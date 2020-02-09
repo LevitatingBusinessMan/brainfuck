@@ -153,14 +153,13 @@ int main(int argc, char *argv[]) {
 						if (*ip == '[' && x == 0)
 							break;
 
-						//When finding another opening bracket,
-						//ignore a closing bracket
+						//When finding another closing bracket,
+						//ignore an opening bracket
 						if (*ip == ']')
 							x++;
 
 						if (*ip == '[')
 							x--;
-
 
 						//No insts left
 						if (ip == inst) {
