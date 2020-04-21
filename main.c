@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	//Instruction stack is 512 bytes
-	char inst[INST_STACK_LENGTH] = {0};
+	char *inst = malloc(INST_STACK_LENGTH);
 
 	//There are 8 instructions supported
 	char *av_insts[8] = {">", "<", "+", "-", ".", ",", "[", "]"};
@@ -50,6 +50,9 @@ int main(int argc, char *argv[]) {
 		
 	}
 
+	// Stack is NULL-terminated
+	inst[i] = 0;
+
 	//Close file
 	fclose(fs);
 
@@ -59,9 +62,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	//Setup WM
-	char stack[STACK_SIZE] = {0}; //Initilize stack
-	char *sp = stack; //Point sp to stack
-	char *ip = inst; //Point ip to instruction stack
+	unsigned char *stack = calloc(STACK_SIZE, sizeof(char)); 	// Initilize stack
+	unsigned char *sp = stack; 									// Point sp to stack
+	char *ip = inst; 					// Point ip to instruction stack
 
 	//Run program
 	while (*ip != 0) {
@@ -175,4 +178,9 @@ int main(int argc, char *argv[]) {
 		}
 		ip++;
 	}
+
+	//Free allocated memory
+	free(inst);
+	free(stack);
+
 }
